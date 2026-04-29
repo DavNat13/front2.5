@@ -23,11 +23,20 @@ jobs:
       - name: Login en Amazon ECR (runner)
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build imagen Frontend y push a ECR
+      - name: Login en Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build imagen Frontend, push a ECR y Docker Hub
         run: |
           docker build -t tienda-frontend .
           docker tag tienda-frontend:latest ${{ secrets.ECR_REPO_URL_FRONTEND }}:latest
           docker push ${{ secrets.ECR_REPO_URL_FRONTEND }}:latest
+
+          docker tag tienda-frontend:latest ${{ secrets.DOCKERHUB_USERNAME }}/tienda-frontend:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/tienda-frontend:latest
 
       - name: Desplegar Frontend vía SSM
         run: |
